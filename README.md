@@ -27,4 +27,4 @@ ansible-playbook -i localhost, deploy.yml --ask-become-pass
 
 ## CI CD
 
-Workflow выполняет `lint`, затем `test` с PostgreSQL. После push в `main` и прохождения проверок публикует образ в GHCR с тегами `latest` и SHA коммита.
+Workflow выполняет `lint`, затем `test` с PostgreSQL. После push в `main` и прохождения проверок публикует образ `ghcr.io/hzhzhz1291/devops-final-app` с тегами `latest` и SHA коммита.
