@@ -1,0 +1,7 @@
+apiVersion: 1
+
+providers:
+  - name: DevOps dashboards
+    type: file
+    options:
+      path: /opt/grafana/dashboards

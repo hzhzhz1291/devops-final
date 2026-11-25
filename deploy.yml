@@ -1,0 +1,82 @@
+---
+- name: Развернуть итоговый DevOps проект
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: true
+  vars:
+    deploy_dir: /opt/devops-final
+
+  tasks:
+    - name: Проверить Docker CLI
+      ansible.builtin.command: docker --version
+      register: docker_check
+      changed_when: false
+      failed_when: false
+
+    - name: Установить Docker и Compose при отсутствии Docker
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+        update_cache: true
+      when: docker_check.rc != 0
+
+    - name: Запустить службу Docker после установки
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+      when: docker_check.rc != 0
+
+    - name: Проверить Docker Compose
+      ansible.builtin.command: docker compose version
+      register: compose_check
+      changed_when: false
+      failed_when: false
+
+    - name: Установить плагин Compose при его отсутствии
+      ansible.builtin.apt:
+        name: docker-compose-v2
+        state: present
+        update_cache: true
+      when: compose_check.rc != 0
+
+    - name: Создать папки проекта
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ deploy_dir }}"
+        - "{{ deploy_dir }}/grafana"
+
+    - name: Скопировать приложение и конфигурацию стека
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/{{ item }}"
+        dest: "{{ deploy_dir }}/{{ item }}"
+        mode: "0644"
+      loop:
+        - package.json
+        - package-lock.json
+        - app.js
+        - server.js
+        - Dockerfile
+        - .dockerignore
+        - docker-compose.yml
+        - prometheus.yml
+
+    - name: Скопировать настройки Grafana
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/grafana/"
+        dest: "{{ deploy_dir }}/grafana/"
+        mode: preserve
+
+    - name: Запустить стек Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ deploy_dir }}"
+        state: present
+        build: policy
+        wait: true
+        wait_timeout: 90

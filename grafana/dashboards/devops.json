@@ -1,0 +1,34 @@
+{
+  "uid": "devops-final",
+  "title": "DevOps Final",
+  "schemaVersion": 39,
+  "version": 1,
+  "time": { "from": "now-15m", "to": "now" },
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Доступность приложения",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "devops-prometheus" },
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 7 },
+      "targets": [{ "refId": "A", "expr": "up{job=\"app\"}", "instant": true }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": {
+            "0": { "text": "DOWN", "color": "red" },
+            "1": { "text": "UP", "color": "green" }
+          }}]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "HTTP запросы по маршрутам",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "devops-prometheus" },
+      "gridPos": { "x": 8, "y": 0, "w": 16, "h": 7 },
+      "targets": [{ "refId": "A", "expr": "sum by (route) (http_requests_total)", "legendFormat": "{{route}}" }]
+    }
+  ]
+}
